@@ -3,8 +3,6 @@ services:
     build: .
     container_name: wheresyabin
     restart: unless-stopped
-    ports:
-      - "3002:3002"
     volumes:
       - bins_data:/app/data
     environment:
@@ -14,6 +12,22 @@ services:
       - VAPID_PUBLIC_KEY=${VAPID_PUBLIC_KEY}
       - VAPID_PRIVATE_KEY=${VAPID_PRIVATE_KEY}
       - ADMIN_SECRET=${ADMIN_SECRET}
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.wheresyabin.rule=Host(`wheresyabin.info`) || Host(`www.wheresyabin.info`)
+      - traefik.http.routers.wheresyabin.entrypoints=web,websecure
+      - traefik.http.routers.wheresyabin.tls=true
+      - traefik.http.routers.wheresyabin.tls.certresolver=mytlschallenge
+      - traefik.http.services.wheresyabin.loadbalancer.server.port=3002
+      - traefik.docker.network=n8n_default
+    networks:
+      - default
+      - traefik
 
 volumes:
   bins_data:
+
+networks:
+  traefik:
+    external: true
+    name: n8n_default
