@@ -152,6 +152,10 @@
   <p class="footer">For Trem y Grug, LL11 3EJ · Data from Denbighshire County Council</p>
 
   <script>
+    // If we already know their house number, skip straight to their page
+    const saved = localStorage.getItem('houseNumber');
+    if (saved) window.location.replace('/' + saved);
+
     function go(e) {
       e.preventDefault();
       const val = document.getElementById('house').value.trim();
@@ -161,6 +165,7 @@
         return;
       }
       err.style.display = 'none';
+      localStorage.setItem('houseNumber', val);
       window.location.href = '/' + val;
     }
   </script>
