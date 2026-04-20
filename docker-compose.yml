@@ -1,0 +1,19 @@
+services:
+  wheresyabin:
+    build: .
+    container_name: wheresyabin
+    restart: unless-stopped
+    ports:
+      - "3002:3002"
+    volumes:
+      - bins_data:/app/data
+    environment:
+      - PORT=3002
+      - POSTCODE=${POSTCODE}
+      - VAPID_CONTACT_EMAIL=${VAPID_CONTACT_EMAIL}
+      - VAPID_PUBLIC_KEY=${VAPID_PUBLIC_KEY}
+      - VAPID_PRIVATE_KEY=${VAPID_PRIVATE_KEY}
+      - ADMIN_SECRET=${ADMIN_SECRET}
+
+volumes:
+  bins_data:

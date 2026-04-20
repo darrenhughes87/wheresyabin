@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Where's Ya Bin? 🗑️</title>
+  <meta name="description" content="Trem y Grug bin collection checker. Find out which bins go out and when." />
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="apple-touch-icon" href="/icon.svg" />
+  <meta name="theme-color" content="#16a34a" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --green: #16a34a;
+      --green-dark: #14532d;
+      --green-light: #dcfce7;
+      --text: #1a1a1a;
+      --muted: #6b7280;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--green);
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      padding-top: env(safe-area-inset-top, 1.5rem);
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 1.5rem;
+      padding: 2.5rem 2rem;
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+    }
+
+    .icon {
+      font-size: 4rem;
+      line-height: 1;
+      margin-bottom: 1rem;
+    }
+
+    h1 {
+      font-size: 1.75rem;
+      font-weight: 800;
+      color: var(--green-dark);
+      margin-bottom: 0.4rem;
+      letter-spacing: -0.03em;
+    }
+
+    .tagline {
+      color: var(--muted);
+      font-size: 0.95rem;
+      margin-bottom: 2rem;
+      line-height: 1.5;
+    }
+
+    label {
+      display: block;
+      font-weight: 600;
+      font-size: 0.875rem;
+      color: var(--text);
+      margin-bottom: 0.5rem;
+      text-align: left;
+    }
+
+    input[type="number"] {
+      width: 100%;
+      font-size: 1.5rem;
+      font-weight: 700;
+      text-align: center;
+      padding: 0.75rem 1rem;
+      border: 2.5px solid #e5e7eb;
+      border-radius: 0.875rem;
+      outline: none;
+      transition: border-color 0.15s;
+      -moz-appearance: textfield;
+      appearance: textfield;
+      color: var(--text);
+      margin-bottom: 1rem;
+    }
+
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
+
+    input[type="number"]:focus { border-color: var(--green); }
+
+    button {
+      width: 100%;
+      background: var(--green);
+      color: #fff;
+      font-size: 1.05rem;
+      font-weight: 700;
+      padding: 0.875rem 1rem;
+      border: none;
+      border-radius: 0.875rem;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+      letter-spacing: 0.01em;
+    }
+
+    button:active { transform: scale(0.98); background: var(--green-dark); }
+
+    .error {
+      color: #dc2626;
+      font-size: 0.875rem;
+      margin-top: 0.5rem;
+      display: none;
+    }
+
+    .footer {
+      color: rgba(255,255,255,0.7);
+      font-size: 0.8rem;
+      margin-top: 2rem;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="icon">🗑️</div>
+    <h1>Where's Ya Bin?</h1>
+    <p class="tagline">The Trem y Grug estate's finest bin reminder. Enter your house number and we'll sort ya out.</p>
+
+    <form id="form" onsubmit="go(event)">
+      <label for="house">Your house number</label>
+      <input
+        type="number"
+        id="house"
+        placeholder="e.g. 21"
+        min="1"
+        max="999"
+        inputmode="numeric"
+        autofocus
+        autocomplete="off"
+      />
+      <p class="error" id="error">Enter a valid house number, ya muppet.</p>
+      <button type="submit">See my bins →</button>
+    </form>
+  </div>
+
+  <p class="footer">For Trem y Grug, LL11 3EJ · Data from Denbighshire County Council</p>
+
+  <script>
+    function go(e) {
+      e.preventDefault();
+      const val = document.getElementById('house').value.trim();
+      const err = document.getElementById('error');
+      if (!val || isNaN(val) || +val < 1) {
+        err.style.display = 'block';
+        return;
+      }
+      err.style.display = 'none';
+      window.location.href = '/' + val;
+    }
+  </script>
+</body>
+</html>

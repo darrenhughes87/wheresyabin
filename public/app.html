@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Where's Ya Bin? 🗑️</title>
+  <meta name="description" content="Your personal bin collection schedule for Trem y Grug." />
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="apple-touch-icon" href="/icon.svg" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="theme-color" content="#16a34a" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --green: #16a34a;
+      --green-dark: #14532d;
+      --green-light: #dcfce7;
+      --blue: #2563eb;
+      --blue-light: #dbeafe;
+      --amber: #d97706;
+      --amber-light: #fef3c7;
+      --text: #1a1a1a;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f9fafb;
+      min-height: 100dvh;
+      color: var(--text);
+    }
+
+    header {
+      background: var(--green);
+      color: #fff;
+      padding: 1.25rem 1.5rem;
+      padding-top: calc(env(safe-area-inset-top, 0px) + 1.25rem);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .header-left h1 {
+      font-size: 1.2rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    .header-left p {
+      font-size: 0.8rem;
+      opacity: 0.8;
+      margin-top: 0.1rem;
+    }
+
+    .header-icon { font-size: 2rem; }
+
+    main { padding: 1.5rem; max-width: 480px; margin: 0 auto; }
+
+    /* Loading state */
+    .loading {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: var(--muted);
+    }
+
+    .spinner {
+      width: 2.5rem;
+      height: 2.5rem;
+      border: 3px solid var(--border);
+      border-top-color: var(--green);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      margin: 0 auto 1rem;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Next collection hero */
+    .next-hero {
+      background: var(--green);
+      color: #fff;
+      border-radius: 1.25rem;
+      padding: 1.5rem;
+      margin-bottom: 1.25rem;
+      display: none;
+    }
+
+    .next-hero .label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      opacity: 0.8;
+      margin-bottom: 0.4rem;
+    }
+
+    .next-hero .day {
+      font-size: 1.6rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      margin-bottom: 0.25rem;
+    }
+
+    .next-hero .bins-going {
+      font-size: 1rem;
+      opacity: 0.9;
+    }
+
+    .next-hero .reminder {
+      margin-top: 1rem;
+      font-size: 0.8rem;
+      opacity: 0.75;
+      background: rgba(255,255,255,0.15);
+      border-radius: 0.5rem;
+      padding: 0.5rem 0.75rem;
+    }
+
+    /* Collection cards */
+    .section-title {
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin-bottom: 0.75rem;
+      display: none;
+    }
+
+    .bin-card {
+      background: #fff;
+      border: 1.5px solid var(--border);
+      border-radius: 1rem;
+      padding: 1rem 1.25rem;
+      margin-bottom: 0.75rem;
+      display: none;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .bin-card.tomorrow {
+      border-color: var(--green);
+      background: var(--green-light);
+    }
+
+    .bin-card.tomorrow.recycling { border-color: var(--blue); background: var(--blue-light); }
+    .bin-card.tomorrow.garden { border-color: #65a30d; background: #f7fee7; }
+
+    .bin-emoji { font-size: 2rem; flex-shrink: 0; }
+
+    .bin-info { flex: 1; min-width: 0; }
+
+    .bin-name {
+      font-weight: 700;
+      font-size: 1rem;
+      margin-bottom: 0.15rem;
+    }
+
+    .bin-date {
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    .bin-badge {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      background: var(--green);
+      color: #fff;
+      border-radius: 999px;
+      padding: 0.2rem 0.6rem;
+      flex-shrink: 0;
+    }
+
+    .bin-badge.recycling { background: var(--blue); }
+    .bin-badge.garden { background: #65a30d; }
+
+    /* Push notification banner */
+    .push-banner {
+      background: var(--amber-light);
+      border: 1.5px solid #fcd34d;
+      border-radius: 1rem;
+      padding: 1rem 1.25rem;
+      margin-bottom: 1.25rem;
+      display: none;
+    }
+
+    .push-banner h3 { font-size: 0.95rem; font-weight: 700; margin-bottom: 0.25rem; }
+    .push-banner p { font-size: 0.82rem; color: var(--muted); margin-bottom: 0.75rem; }
+
+    .push-banner button {
+      width: 100%;
+      background: var(--green);
+      color: #fff;
+      font-size: 0.9rem;
+      font-weight: 700;
+      padding: 0.65rem 1rem;
+      border: none;
+      border-radius: 0.75rem;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+    }
+
+    .push-banner button:active { transform: scale(0.98); background: var(--green-dark); }
+
+    /* iOS install prompt */
+    .install-banner {
+      background: #fff;
+      border: 1.5px solid var(--border);
+      border-radius: 1rem;
+      padding: 1rem 1.25rem;
+      margin-bottom: 1.25rem;
+      display: none;
+    }
+
+    .install-banner h3 { font-size: 0.95rem; font-weight: 700; margin-bottom: 0.25rem; }
+    .install-banner p { font-size: 0.82rem; color: var(--muted); line-height: 1.5; }
+
+    /* Error state */
+    .error-card {
+      background: #fff;
+      border: 1.5px solid #fca5a5;
+      border-radius: 1rem;
+      padding: 1.5rem;
+      text-align: center;
+      display: none;
+    }
+
+    .error-card p { color: var(--muted); font-size: 0.9rem; margin-bottom: 1rem; }
+
+    .error-card a {
+      display: inline-block;
+      color: var(--green);
+      font-weight: 600;
+      font-size: 0.9rem;
+      text-decoration: none;
+    }
+
+    footer {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.75rem;
+      padding: 2rem 1.5rem;
+      padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 2rem);
+    }
+
+    footer a { color: var(--muted); }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-left">
+      <h1>Where's Ya Bin? 🗑️</h1>
+      <p id="address-line">Trem y Grug, LL11 3EJ</p>
+    </div>
+    <div class="header-icon">🏡</div>
+  </header>
+
+  <main>
+    <!-- Loading -->
+    <div class="loading" id="loading">
+      <div class="spinner"></div>
+      <p>Checking with the council… hang on…</p>
+    </div>
+
+    <!-- Error -->
+    <div class="error-card" id="error-card">
+      <p>😬 Couldn't reach the council's bin service. Give it a minute and try again.</p>
+      <a href="javascript:location.reload()">Try again</a>
+    </div>
+
+    <!-- iOS install prompt (shown when not in standalone and on iOS) -->
+    <div class="install-banner" id="install-banner">
+      <h3>📱 Add to Home Screen</h3>
+      <p>For push notifications on iPhone, tap <strong>Share</strong> then <strong>"Add to Home Screen"</strong> — then come back here and allow notifications.</p>
+    </div>
+
+    <!-- Push notification banner -->
+    <div class="push-banner" id="push-banner">
+      <h3>🔔 Get bin reminders</h3>
+      <p>Tap below and we'll send you a notification at 5pm the day before your bins go out. Easy peasy.</p>
+      <button id="push-btn" onclick="subscribePush()">Yes please, remind me!</button>
+    </div>
+
+    <!-- Next collection hero -->
+    <div class="next-hero" id="next-hero">
+      <div class="label">Next collection</div>
+      <div class="day" id="next-day">—</div>
+      <div class="bins-going" id="next-bins">—</div>
+      <div class="reminder">📍 Make sure your bins are out by 6:30am!</div>
+    </div>
+
+    <!-- Full schedule -->
+    <div class="section-title" id="schedule-title">Full schedule</div>
+
+    <div class="bin-card" id="card-refuse">
+      <div class="bin-emoji">🗑️</div>
+      <div class="bin-info">
+        <div class="bin-name">General Waste</div>
+        <div class="bin-date" id="date-refuse">—</div>
+      </div>
+      <div class="bin-badge" id="badge-refuse" style="display:none">Tomorrow!</div>
+    </div>
+
+    <div class="bin-card" id="card-recycling">
+      <div class="bin-emoji">♻️</div>
+      <div class="bin-info">
+        <div class="bin-name">Recycling</div>
+        <div class="bin-date" id="date-recycling">—</div>
+      </div>
+      <div class="bin-badge recycling" id="badge-recycling" style="display:none">Tomorrow!</div>
+    </div>
+
+    <div class="bin-card" id="card-garden">
+      <div class="bin-emoji">🌿</div>
+      <div class="bin-info">
+        <div class="bin-name">Garden Waste</div>
+        <div class="bin-date" id="date-garden">—</div>
+      </div>
+      <div class="bin-badge garden" id="badge-garden" style="display:none">Tomorrow!</div>
+    </div>
+  </main>
+
+  <footer>
+    <p>Data from <a href="https://www.denbighshire.gov.uk" target="_blank" rel="noopener">Denbighshire County Council</a> · <a href="/">Change house number</a></p>
+  </footer>
+
+  <script>
+    const houseNumber = window.location.pathname.replace(/\//g, '') || '?';
+    document.getElementById('address-line').textContent = `No. ${houseNumber} Trem y Grug, LL11 3EJ`;
+
+    function parseDate(str) {
+      if (!str) return null;
+      const [d, m, y] = str.split('/');
+      return new Date(+y, +m - 1, +d);
+    }
+
+    function formatDate(d) {
+      if (!d) return null;
+      return d.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
+    }
+
+    function isTomorrow(dateStr) {
+      const d = parseDate(dateStr);
+      if (!d) return false;
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      return d.toDateString() === tomorrow.toDateString();
+    }
+
+    async function loadBins() {
+      try {
+        const res = await fetch(`/api/bins/${houseNumber}`);
+        if (!res.ok) throw new Error('API error');
+        const data = await res.json();
+        renderBins(data);
+      } catch {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('error-card').style.display = 'block';
+      }
+    }
+
+    function renderBins(data) {
+      document.getElementById('loading').style.display = 'none';
+
+      const bins = [
+        { id: 'refuse',    date: data.refuseDate,    label: '🗑️ General Waste',  cls: '' },
+        { id: 'recycling', date: data.recyclingDate,  label: '♻️ Recycling',       cls: 'recycling' },
+        { id: 'garden',    date: data.gardenDate,     label: '🌿 Garden Waste',    cls: 'garden' },
+      ];
+
+      // Find next upcoming collection
+      const today = new Date(); today.setHours(0,0,0,0);
+      let nextBin = null, nextDate = null;
+      const tomorrowBins = [];
+
+      bins.forEach(bin => {
+        const d = parseDate(bin.date);
+        if (!d) return;
+
+        const card = document.getElementById(`card-${bin.id}`);
+        const datEl = document.getElementById(`date-${bin.id}`);
+        const badge = document.getElementById(`badge-${bin.id}`);
+
+        card.style.display = 'flex';
+        datEl.textContent = formatDate(d) || 'Not scheduled';
+
+        if (isTomorrow(bin.date)) {
+          card.classList.add('tomorrow', bin.cls);
+          badge.style.display = 'inline-block';
+          tomorrowBins.push(bin.label);
+        }
+
+        if (!nextDate || d < nextDate) {
+          nextDate = d;
+          nextBin = bin;
+        }
+      });
+
+      // Hero card
+      if (tomorrowBins.length > 0) {
+        const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1);
+        document.getElementById('next-day').textContent = formatDate(tomorrow);
+        document.getElementById('next-bins').textContent = tomorrowBins.join(' + ');
+        document.getElementById('next-hero').style.display = 'block';
+      } else if (nextBin && nextDate) {
+        document.getElementById('next-day').textContent = formatDate(nextDate);
+        document.getElementById('next-bins').textContent = nextBin.label;
+        document.getElementById('next-hero').style.display = 'block';
+      }
+
+      document.getElementById('schedule-title').style.display = 'block';
+
+      // Push / install prompts
+      setupPushPrompts();
+    }
+
+    // ---- Push notifications ----
+
+    function isIos() { return /iphone|ipad|ipod/i.test(navigator.userAgent); }
+    function isStandalone() { return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone; }
+
+    async function setupPushPrompts() {
+      if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+
+      // Register service worker
+      try {
+        await navigator.serviceWorker.register('/sw.js');
+      } catch { return; }
+
+      const permission = Notification.permission;
+
+      if (permission === 'granted') {
+        // Already subscribed — re-subscribe silently to keep fresh
+        await doSubscribe();
+        return;
+      }
+
+      if (permission === 'denied') return; // User said no — respect it
+
+      // Show iOS install hint before push prompt
+      if (isIos() && !isStandalone()) {
+        document.getElementById('install-banner').style.display = 'block';
+        return; // Don't ask for push until installed
+      }
+
+      document.getElementById('push-banner').style.display = 'block';
+    }
+
+    async function subscribePush() {
+      const btn = document.getElementById('push-btn');
+      btn.textContent = 'One sec…';
+      btn.disabled = true;
+
+      try {
+        const keyRes = await fetch('/api/vapid-public-key');
+        const { key } = await keyRes.json();
+
+        const sw = await navigator.serviceWorker.ready;
+        const sub = await sw.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(key)
+        });
+
+        await doSubscribe(sub);
+
+        document.getElementById('push-banner').innerHTML =
+          '<h3>✅ You\'re subscribed!</h3><p>We\'ll ping you at 5pm the day before your bins go out. Don\'t say I never tell ya! 💚</p>';
+      } catch (err) {
+        btn.textContent = 'Tap to enable reminders';
+        btn.disabled = false;
+        console.error('Push subscribe failed:', err);
+      }
+    }
+
+    async function doSubscribe(sub) {
+      if (!sub) {
+        const sw = await navigator.serviceWorker.ready;
+        sub = await sw.pushManager.getSubscription();
+        if (!sub) return;
+      }
+      await fetch('/api/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ subscription: sub.toJSON(), houseNumber })
+      });
+    }
+
+    function urlBase64ToUint8Array(base64String) {
+      const padding = '='.repeat((4 - base64String.length % 4) % 4);
+      const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+      const raw = atob(base64);
+      return Uint8Array.from([...raw].map(c => c.charCodeAt(0)));
+    }
+
+    loadBins();
+  </script>
+</body>
+</html>

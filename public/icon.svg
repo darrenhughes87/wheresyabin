@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Green background circle -->
+  <rect width="512" height="512" rx="128" fill="#16a34a"/>
+  <!-- Bin body -->
+  <rect x="148" y="208" width="216" height="224" rx="16" fill="#fff"/>
+  <!-- Bin lid -->
+  <rect x="128" y="168" width="256" height="40" rx="12" fill="#dcfce7"/>
+  <!-- Lid handle -->
+  <rect x="216" y="136" width="80" height="32" rx="10" fill="#dcfce7"/>
+  <!-- Bin stripes (recycling lines) -->
+  <rect x="196" y="240" width="12" height="160" rx="6" fill="#16a34a" opacity="0.25"/>
+  <rect x="250" y="240" width="12" height="160" rx="6" fill="#16a34a" opacity="0.25"/>
+  <rect x="304" y="240" width="12" height="160" rx="6" fill="#16a34a" opacity="0.25"/>
+</svg>
